@@ -223,7 +223,7 @@ class Fetcher(object):
         fetch['headers']['User-Agent'] = self.user_agent
         task_fetch = task.get('fetch', {})
         # Add auto proxy
-        if not task_fetch.get("proxy", None) or task_fetch.get("auto_proxy", True):
+        if not task_fetch.get("proxy", None) or task_fetch.get("auto_proxy", False):
             if self.auto_proxy:
                 try:
                     proxys = self.col.find(projection=['url']).sort('updatetime', pymongo.DESCENDING).limit(50)
@@ -234,6 +234,9 @@ class Fetcher(object):
                     task_fetch["auto_proxy"] = True
                 except Exception, e:
                     logger.error("get proxy error")
+        
+        if task_fetch.get("auto_proxy", False):
+            logger.error("retry url")
         
         for each in self.allowed_options:
             if each in task_fetch:
