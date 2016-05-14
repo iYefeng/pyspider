@@ -30,6 +30,9 @@ from tornado.simple_httpclient import SimpleAsyncHTTPClient
 from pyspider.libs import utils, dataurl, counter
 from pyspider.libs.url import quote_chinese
 from .cookie_utils import extract_cookies_to_jar
+import pymongo
+import random
+
 logger = logging.getLogger('fetcher')
 
 
@@ -71,8 +74,11 @@ class Fetcher(object):
     }
     phantomjs_proxy = None
     robot_txt_age = 60*60  # 1h
+    
+    
 
-    def __init__(self, inqueue, outqueue, poolsize=100, proxy=None, async=True):
+    def __init__(self, inqueue, outqueue, poolsize=100, proxy=None, async=True, 
+                    auto_proxy=""):
         self.inqueue = inqueue
         self.outqueue = outqueue
 
@@ -82,6 +88,12 @@ class Fetcher(object):
         self.proxy = proxy
         self.async = async
         self.ioloop = tornado.ioloop.IOLoop()
+        if auto_proxy:
+            auto_proxy_host, auto_proxy_port = auto_proxy.split(":")
+            self.mongo = pymongo.MongoClient(auto_proxy_host, auto_proxy_port)
+            self.db = self.mongo.resultdb
+            self.col = self.db.get_proxy
+            self.col.ensure_index("updatetime")
 
         self.robots_txt_cache = {}
 
@@ -209,6 +221,18 @@ class Fetcher(object):
         fetch['headers'] = tornado.httputil.HTTPHeaders(fetch['headers'])
         fetch['headers']['User-Agent'] = self.user_agent
         task_fetch = task.get('fetch', {})
+        # Add auto proxy
+        if not task_fetch.get("proxy", None):
+            if self.auto_proxy:
+                try:
+                    proxys = self.col.find(projection=['url']).sort('updatetime', pymongo.DESCENDING).limit(50)
+                    proxys = [x["url"] for x in proxys]
+                    proxy = random.choice(proxys)
+                    logger.info("set auto proxy %s:%s proxy=%s", task.get('project'), task.get('taskid'), proxy)
+                    task_fetch["proxy"] = proxy
+                except Exception, e:
+                    logger.error("get proxy error")
+        
         for each in self.allowed_options:
             if each in task_fetch:
                 fetch[each] = task_fetch[each]
@@ -223,6 +247,7 @@ class Fetcher(object):
             track_ok = False
         # proxy
         proxy_string = None
+        
         if isinstance(task_fetch.get('proxy'), six.string_types):
             proxy_string = task_fetch['proxy']
         elif self.proxy and task_fetch.get('proxy', True):
