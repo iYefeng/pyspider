@@ -85,6 +85,7 @@ def connect_rpc(ctx, param, value):
 @click.option('--data-path', default='./data', help='data dir path')
 @click.option('--add-sys-path/--not-add-sys-path', default=True, is_flag=True,
               help='add current working directory to python lib search path')
+@click.option('--auto-proxy', help='auto set proxy from mongodb', default="")
 @click.version_option(version=pyspider.__version__, prog_name=pyspider.__name__)
 @click.pass_context
 def cli(ctx, **kwargs):
@@ -219,7 +220,6 @@ def scheduler(ctx, xmlrpc, xmlrpc_host, xmlrpc_port,
 @click.option('--proxy', help="proxy host:port")
 @click.option('--user-agent', help='user agent')
 @click.option('--timeout', help='default fetch timeout')
-@click.option('--auto-proxy', help='auto set proxy from mongodb', default="")
 @click.option('--fetcher-cls', default='pyspider.fetcher.Fetcher', callback=load_cls,
               help='Fetcher class to be used.')
 @click.pass_context
@@ -232,7 +232,7 @@ def fetcher(ctx, xmlrpc, xmlrpc_host, xmlrpc_port, poolsize, proxy, user_agent,
     Fetcher = load_cls(None, None, fetcher_cls)
 
     fetcher = Fetcher(inqueue=g.scheduler2fetcher, outqueue=g.fetcher2processor,
-                      poolsize=poolsize, proxy=proxy, auto_proxy=auto_proxy, async=async)
+                      poolsize=poolsize, proxy=proxy, auto_proxy=g.auto_proxy, async=async)
     fetcher.phantomjs_proxy = g.phantomjs_proxy
     if user_agent:
         fetcher.user_agent = user_agent
