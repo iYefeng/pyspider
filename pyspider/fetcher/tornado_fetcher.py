@@ -90,7 +90,7 @@ class Fetcher(object):
         self.ioloop = tornado.ioloop.IOLoop()
         if auto_proxy:
             auto_proxy_host, auto_proxy_port = auto_proxy.split(":")
-            self.mongo = pymongo.MongoClient(auto_proxy_host, auto_proxy_port)
+            self.mongo = pymongo.MongoClient(auto_proxy_host, int(auto_proxy_port))
             self.db = self.mongo.resultdb
             self.col = self.db.get_proxy
             self.col.ensure_index("updatetime")
