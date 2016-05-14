@@ -38,7 +38,7 @@ class ResultWorker(object):
                         project=task['project'],
                         taskid=taskid,
                         url=url,
-                        result=result
+                        result=item
                     )
                 else:
                     logger.warning('result UNKNOW -> %.30r' % result)
