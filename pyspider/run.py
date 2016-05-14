@@ -224,7 +224,7 @@ def scheduler(ctx, xmlrpc, xmlrpc_host, xmlrpc_port,
               help='Fetcher class to be used.')
 @click.pass_context
 def fetcher(ctx, xmlrpc, xmlrpc_host, xmlrpc_port, poolsize, proxy, user_agent,
-            timeout, fetcher_cls, auto_proxy, async=True):
+            timeout, fetcher_cls, async=True):
     """
     Run Fetcher.
     """
