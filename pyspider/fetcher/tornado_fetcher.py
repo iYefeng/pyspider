@@ -88,6 +88,7 @@ class Fetcher(object):
         self.proxy = proxy
         self.async = async
         self.ioloop = tornado.ioloop.IOLoop()
+        self.auto_proxy = auto_proxy
         if auto_proxy:
             auto_proxy_host, auto_proxy_port = auto_proxy.split(":")
             self.mongo = pymongo.MongoClient(auto_proxy_host, int(auto_proxy_port))
