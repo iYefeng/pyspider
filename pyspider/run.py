@@ -219,7 +219,7 @@ def scheduler(ctx, xmlrpc, xmlrpc_host, xmlrpc_port,
 @click.option('--proxy', help="proxy host:port")
 @click.option('--user-agent', help='user agent')
 @click.option('--timeout', help='default fetch timeout')
-@click.option('--auto-proxy', help='auto set proxy from mongodb' default="")
+@click.option('--auto-proxy', help='auto set proxy from mongodb', default="")
 @click.option('--fetcher-cls', default='pyspider.fetcher.Fetcher', callback=load_cls,
               help='Fetcher class to be used.')
 @click.pass_context
