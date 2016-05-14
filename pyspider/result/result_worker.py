@@ -9,6 +9,7 @@ import time
 import json
 import logging
 from six.moves import queue as Queue
+import hashlib
 logger = logging.getLogger("result")
 
 
@@ -28,7 +29,21 @@ class ResultWorker(object):
         '''Called every result'''
         if not result:
             return
-        if 'taskid' in task and 'project' in task and 'url' in task:
+        if type(result) == list and 'taskid' in task and 'project' in task and 'url' in task:
+            for item in result:
+                url = item.get("url", "")
+                if url: 
+                    taskid = hashlib.md5(url).hexdigest()
+                    return self.resultdb.save(
+                        project=task['project'],
+                        taskid=taskid,
+                        url=url,
+                        result=result
+                    )
+                else:
+                    logger.warning('result UNKNOW -> %.30r' % result)
+                    return
+        elif 'taskid' in task and 'project' in task and 'url' in task:
             logger.info('result %s:%s %s -> %.30r' % (
                 task['project'], task['taskid'], task['url'], result))
             return self.resultdb.save(
